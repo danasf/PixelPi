@@ -44,7 +44,7 @@ http://thegreatgeekery.blogspot.ca/2012/08/raspberry-pi-and-ws2801.html
                                       --refresh_rate REFRESH_RATE  Set the refresh rate in ms (default 500ms)
                                       --filename FILENAME   Specify the image file eg: hello.png
                                       --array_height ARRAY_HEIGHT   Set the Y dimension of your pixel array (height)
-
+									  --strip_order ORDER  Set the pixel color order (default RGB)
 
                   sudo python pixelpi.py array --help 
                   usage: pixelpi.py array [-h] [--chip {WS2801,LDP8806}] [--verbose]

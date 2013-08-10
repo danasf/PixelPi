@@ -156,7 +156,7 @@ WHITESMOKE = bytearray(b'\xf5\xf5\xf5')
 YELLOW = bytearray(b'\xff\xff\x00')
 YELLOWGREEN = bytearray(b'\x9a\xcd\x32')
 RAINBOW = [AQUA, AQUAMARINE, AZURE, BEIGE, BISQUE, BLANCHEDALMOND, BLUE, BLUEVIOLET, BROWN, BURLYWOOD, CADETBLUE, CHARTREUSE, CHOCOLATE, CORAL, CORNFLOWERBLUE, CORNSILK, CRIMSON, CYAN, DARKBLUE, DARKCYAN, DARKGOLDENROD, DARKGRAY, DARKGREY, DARKGREEN, DARKKHAKI, DARKMAGENTA, DARKOLIVEGREEN, DARKORANGE, DARKORCHID, DARKRED, DARKSALMON, DARKSEAGREEN, DARKSLATEBLUE, DARKSLATEGRAY, DARKSLATEGREY, DARKTURQUOISE, DARKVIOLET, DEEPPINK, DEEPSKYBLUE, DIMGRAY, DIMGREY, DODGERBLUE, FIREBRICK, FLORALWHITE, FORESTGREEN, FUCHSIA, GAINSBORO, GHOSTWHITE, GOLD, GOLDENROD, GRAY, GREY, GREEN, GREENYELLOW, HONEYDEW, HOTPINK, INDIANRED, INDIGO, IVORY, KHAKI, LAVENDER, LAVENDERBLUSH, LAWNGREEN, LEMONCHIFFON, LIGHTBLUE, LIGHTCORAL, LIGHTCYAN, LIGHTGOLDENRODYELLOW, LIGHTGRAY, LIGHTGREY, LIGHTGREEN, LIGHTPINK, LIGHTSALMON, LIGHTSEAGREEN, LIGHTSKYBLUE, LIGHTSLATEGRAY, LIGHTSLATEGREY, LIGHTSTEELBLUE, LIGHTYELLOW, LIME, LIMEGREEN, LINEN, MAGENTA, MAROON, MEDIUMAQUAMARINE, MEDIUMBLUE, MEDIUMORCHID, MEDIUMPURPLE, MEDIUMSEAGREEN, MEDIUMSLATEBLUE, MEDIUMSPRINGGREEN, MEDIUMTURQUOISE, MEDIUMVIOLETRED, MIDNIGHTBLUE, MINTCREAM, MISTYROSE, MOCCASIN, NAVAJOWHITE, NAVY, OLDLACE, OLIVE, OLIVEDRAB, ORANGE, ORANGERED, ORCHID, PALEGOLDENROD, PALEGREEN, PALETURQUOISE, PALEVIOLETRED, PAPAYAWHIP, PEACHPUFF, PERU, PINK, PLUM, POWDERBLUE, PURPLE, RED, ROSYBROWN, ROYALBLUE, SADDLEBROWN, SALMON, SANDYBROWN, SEAGREEN, SEASHELL, SIENNA, SILVER, SKYBLUE, SLATEBLUE, SLATEGRAY, SLATEGREY, SNOW, SPRINGGREEN, STEELBLUE, TAN, TEAL, THISTLE, TOMATO, TURQUOISE, VIOLET, WHEAT, WHITE, WHITESMOKE, YELLOW, YELLOWGREEN, YELLOWGREEN]
-
+SIMPLE_RAINBOW = [RED,ORANGE,YELLOW,GREEN,BLUE,INDIGO,VIOLET]
 def write_stream(pixels):
     if args.chip_type == "LDP6803":
         pixel_out_bytes = bytearray(2)
@@ -422,20 +422,19 @@ def filter_pixel(input_pixel, brightness):
     input_pixel[1] = int(brightness * input_pixel[1])
     input_pixel[2] = int(brightness * input_pixel[2])
     output_pixel = bytearray(PIXEL_SIZE)
-    if args.chip_type == "LPD8806":
+    if args.strip_order == "GRB":
         # Convert RGB into GRB bytearray list.
-
-        # Some LPD8806 strips use this ordering:
-        # output_pixel[0] = gamma[input_pixel[1]]
-        # output_pixel[1] = gamma[input_pixel[0]]
-        # output_pixel[2] = gamma[input_pixel[2]]
-
-        # While some others use this one:
         output_pixel[0] = gamma[input_pixel[2]]
-        output_pixel[1] = gamma[input_pixel[0]]
+    	output_pixel[1] = gamma[input_pixel[0]]
         output_pixel[2] = gamma[input_pixel[1]]
 
+    elif args.strip_order == "BRG":
+        # Some LPD8806 strips use this ordering:
+		output_pixel[0] = gamma[input_pixel[1]]
+		output_pixel[1] = gamma[input_pixel[0]]
+		output_pixel[2] = gamma[input_pixel[2]]
     else:
+        # default to RGB
         output_pixel[0] = gamma[input_pixel[0]]
         output_pixel[1] = gamma[input_pixel[1]]
         output_pixel[2] = gamma[input_pixel[2]]
@@ -449,6 +448,8 @@ common_parser.add_argument('--chip', action='store', dest='chip_type', default='
 common_parser.add_argument('--verbose', action='store_true', dest='verbose', default=True, help='enable verbose mode')
 common_parser.add_argument('--spi_dev', action='store', dest='spi_dev_name', required=False, default='/dev/spidev0.0', help='Set the SPI device descriptor')
 common_parser.add_argument('--refresh_rate', action='store', dest='refresh_rate', required=False, default=500, type=int, help='Set the refresh rate in ms (default 500ms)')
+common_parser.add_argument('--strip_order', action='store', dest='strip_order', required=False, default='RGB', help='Strip order RGB, GRB, etc (default RGB)')
+
 parser_strip = subparsers.add_parser('strip', parents=[common_parser], help='Stip Mode - Display an image using POV and a LED strip')
 parser_strip.set_defaults(func=strip)
 parser_strip.add_argument('--filename', action='store', dest='filename', required=False, help='Specify the image file eg: hello.png')
